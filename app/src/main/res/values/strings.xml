@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FitShaker</string>
+    <string name="header">Twoja sesja</string>
+    <string name="default_timer">0.0</string>
+    <string name="default_cal">0</string>
+    <string name="save_session">Zakończ sesję</string>
+</resources>
