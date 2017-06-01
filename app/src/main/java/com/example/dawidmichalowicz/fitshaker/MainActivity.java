@@ -8,15 +8,21 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Handler;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private CaloriesCounter calCounter;
+    ConstraintLayout constraintLayout;
     private long lastUpdate = 0;
     private float last_x, last_y, last_z;
     private static final int SHAKE_THRESHOLD = 600;
@@ -58,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean stopped = false;
     float cals;
     private SharedPreferences preferences;
+    public Context mainContext;
 
     //Timer setup
     Handler timerHandler = new Handler();
@@ -71,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             millis = (int) ((millis % 1000) / 10);
             minutes = seconds / 60;
             seconds = seconds % 60;
+
 
             timerTV.setText(String.format("%02d:%02d:%02d", minutes, seconds, millis));
             cals = calCounter.countCals(time, weight);
@@ -87,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        mainContext = getApplicationContext();
+        constraintLayout = (ConstraintLayout) findViewById(R.id.cl);
         preferences = getSharedPreferences("trainings", Activity.MODE_PRIVATE);
         calCounter = new CaloriesCounter();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -95,29 +106,59 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu,menu);
+        inflater.inflate(R.menu.menu, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-        switch(item.getItemId()) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case R.id.saveAction:
                 saveData();
                 Toast.makeText(this, "Trening zapisany", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.showSettingsAction:
-                Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(this,List.class);
+                Intent intent = new Intent(this, List.class);
                 startActivity(intent);
                 break;
             case R.id.resetTrainingList:
-                SharedPreferences.Editor preferencesEditor = preferences.edit();
-                preferencesEditor.clear();
-                preferencesEditor.commit();
-                Toast.makeText(this, "Historia treningów wyczyszczona", Toast.LENGTH_SHORT).show();
+                LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                View popup = inflater.inflate(R.layout.popup,null);
+                final PopupWindow popupWindow = new PopupWindow(
+                        popup,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT
+                );
+                if(Build.VERSION.SDK_INT>=21){
+                    popupWindow.setElevation(5.0f);
+                }
+                Button confirm = (Button) popup.findViewById(R.id.confirmButton);
+                Button decline = (Button) popup.findViewById(R.id.declineButton);
+
+                confirm.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View v) {
+                        SharedPreferences.Editor preferencesEditor = preferences.edit();
+                        preferencesEditor.clear();
+                        preferencesEditor.apply();
+                        popupWindow.dismiss();
+                        Toast.makeText(mainContext, "Historia treningów wyczyszczona", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                decline.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                        Toast.makeText(mainContext, "Historia treningów bez zmian", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                popupWindow.showAtLocation(constraintLayout, Gravity.CENTER,0,0);
+
                 break;
             default:
                 break;
@@ -133,11 +174,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Date date = new Date();
 
         String duration = String.format("%02d:%02d:%02d", minutes, seconds, millis);
-        String result = key.format(date) + "   \nCzas: "+ duration + "    \nSpalone kalorie: " + String.format(getString(R.string.cal_format),cals);
-        Log.d("log",result);
-        Log.d("log",key.format(date));
+        String result = key.format(date) + "   \nCzas: " + duration + "    \nSpalone kalorie: " + String.format(getString(R.string.cal_format), cals);
+        Log.d("log", result);
+        Log.d("log", key.format(date));
 
-        preferencesEditor.putString(key.format(date),result);
+        preferencesEditor.putString(key.format(date), result);
         preferencesEditor.apply();
     }
 
@@ -219,8 +260,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             timerHandler.removeCallbacks(timerRunnable);
             startButton.setClickable(true);
             stopped = true;
-        }
-        else {
+        } else {
             timerTV.setText(getString(R.string.default_timer));
             calTV.setText(getString(R.string.default_cal));
             stopped = false;

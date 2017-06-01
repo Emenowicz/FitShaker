@@ -7,4 +7,7 @@
     <string name="stop_session">Stop</string>
     <string name="kcal">kCal</string>
     <string name="cal_format">%03.1f</string>
+    <string name="delete_prompt">Czy na pewno  usunąć całą historię  twoich treningów?</string>
+    <string name="no">Nie</string>
+    <string name="confirm">Tak</string>
 </resources>
