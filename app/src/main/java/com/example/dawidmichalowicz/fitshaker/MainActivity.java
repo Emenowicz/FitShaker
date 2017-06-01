@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float last_x, last_y, last_z;
     private static final int SHAKE_THRESHOLD = 600;
     private static final int SHAKE_SLOP_TIME_MS = 300;
-    private static final int SHAKE_COUNT_RESET_TIME_MS = 2000;
+    private static final int SHAKE_COUNT_RESET_TIME_MS = 1000;
     long shakeTimeStamp;
     int shakesCounter = 0;
     long startTime = 0;
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             int minutes = seconds / 60;
             seconds = seconds % 60;
 
-            timerTV.setText(String.format(getString(R.string.time_format), minutes, seconds, millis));
+            timerTV.setText(String.format("%02d:%02d:%02d", minutes, seconds, millis));
             cals = calCounter.countCals(time, weight);
             calTV.setText(String.format(getString(R.string.cal_format), cals));
             timerHandler.postDelayed(this, 10);

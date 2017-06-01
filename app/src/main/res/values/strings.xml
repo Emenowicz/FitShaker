@@ -6,6 +6,5 @@
     <string name="start_session">Start</string>
     <string name="stop_session">Stop</string>
     <string name="kcal">kCal</string>
-    <string name="time_format">%02d:%02d:%02d</string>
     <string name="cal_format">%03.1f</string>
 </resources>
