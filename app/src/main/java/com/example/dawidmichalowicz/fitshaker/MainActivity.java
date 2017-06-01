@@ -21,7 +21,7 @@ import butterknife.OnClick;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     @BindView(R.id.calTV)
-    TextView calCounter;
+    TextView calTV;
     @BindView(R.id.timerTV)
     TextView timerTV;
     @BindView(R.id.start_button)
@@ -30,14 +30,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private CaloriesCounter calCounter;
     private long lastUpdate = 0;
     private float last_x, last_y, last_z;
     private static final int SHAKE_THRESHOLD = 600;
     private static final int SHAKE_SLOP_TIME_MS = 300;
-    private static final int SHAKE_COUNT_RESET_TIME_MS = 3000;
+    private static final int SHAKE_COUNT_RESET_TIME_MS = 4000;
     long shakeTimeStamp;
     int shakesCounter = 0;
     long startTime = 0;
+    long time = 0;
+    int weight = 70;
+    float cals;
 
     //Timer setup
     Handler timerHandler = new Handler();
@@ -46,12 +50,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @Override
         public void run() {
             long millis = System.currentTimeMillis() - startTime;
+            time = millis;
             int seconds = (int) (millis / 1000);
             millis = (int)((millis %1000)/10);
             int minutes = seconds / 60;
             seconds = seconds % 60;
 
             timerTV.setText(String.format("%d:%02d:%02d", minutes,seconds,millis ));
+            cals = calCounter.countCals(time,weight);
+            Log.d("cals",String.valueOf(cals));
+            calTV.setText(String.valueOf(cals));
             timerHandler.postDelayed(this,10);
 
         }
@@ -64,8 +72,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        calCounter = new CaloriesCounter();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
     }
 
     @Override
@@ -104,11 +114,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 Log.d("Shakestamp>now", "false");
 
-                if (shakeTimeStamp + SHAKE_COUNT_RESET_TIME_MS < now) {
-                    timerHandler.removeCallbacks(timerRunnable);
-                    sensorManager.unregisterListener(this);
-                    startButton.setClickable(true);
-                }
+//                if (shakeTimeStamp + SHAKE_COUNT_RESET_TIME_MS < now) {
+//                    timerHandler.removeCallbacks(timerRunnable);
+//                    sensorManager.unregisterListener(this);
+//                    startButton.setClickable(true);
+//                }
 
                 if (speed > SHAKE_THRESHOLD) {
                     onShake();
@@ -148,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void onShake() {
         shakesCounter++;
         Log.d("ShakesCounter", "Incremented");
-        calCounter.setText(String.valueOf(shakesCounter));
+
 
     }
 }
