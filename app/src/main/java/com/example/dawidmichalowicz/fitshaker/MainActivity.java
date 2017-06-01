@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -106,13 +105,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()) {
             case R.id.saveAction:
-                Toast.makeText(this, "Save selected", Toast.LENGTH_SHORT).show();
                 saveData();
+                Toast.makeText(this, "Trening zapisany", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.showSettingsAction:
                 Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(this,TrainingList.class);
+                Intent intent = new Intent(this,List.class);
                 startActivity(intent);
+                break;
+            case R.id.resetTrainingList:
+                SharedPreferences.Editor preferencesEditor = preferences.edit();
+                preferencesEditor.clear();
+                preferencesEditor.commit();
+                Toast.makeText(this, "Historia treningów wyczyszczona", Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
@@ -124,15 +129,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void saveData() {
         SharedPreferences.Editor preferencesEditor = preferences.edit();
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        DateFormat key = new SimpleDateFormat("dd/MM/yyyy/hh/mm/ss");
+        DateFormat key = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         Date date = new Date();
 
         String duration = String.format("%02d:%02d:%02d", minutes, seconds, millis);
-        String result = df.format(date) + "    Czas: "+ duration + "    Spalone kalorie: " + String.format(getString(R.string.cal_format),cals);
+        String result = key.format(date) + "   \nCzas: "+ duration + "    \nSpalone kalorie: " + String.format(getString(R.string.cal_format),cals);
         Log.d("log",result);
         Log.d("log",key.format(date));
 
         preferencesEditor.putString(key.format(date),result);
+        preferencesEditor.apply();
     }
 
     @Override
@@ -175,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     timerHandler.removeCallbacks(timerRunnable);
                     sensorManager.unregisterListener(this);
                     startButton.setClickable(true);
+                    Toast.makeText(this, "Za długo bez ruchu. \nSesja przerwana", Toast.LENGTH_LONG).show();
                 }
 
                 if (speed > SHAKE_THRESHOLD) {

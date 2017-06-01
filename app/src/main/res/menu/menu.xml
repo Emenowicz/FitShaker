@@ -5,11 +5,15 @@
         android:id="@+id/saveAction"
         android:icon="@drawable/ic_save_white_24dp"
         app:showAsAction="ifRoom"
-        android:title="save"
         />
     <item
         android:id="@+id/showSettingsAction"
         android:icon="@drawable/ic_list_white_24dp"
+        app:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/resetTrainingList"
+        android:icon="@drawable/ic_delete_forever_white_24dp"
         app:showAsAction="ifRoom"
         />
 
