@@ -24,7 +24,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
     private long lastUpdate = 0;
     private float last_x, last_y, last_z;
-    private static final int SHAKE_THRESHOLD = 800;
+    private static final int SHAKE_THRESHOLD = 600;
+    private static final int SHAKE_SLOP_TIME_MS = 500;
+    long shakeTimeStamp;
     int shakesCounter;
 
 
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        calCounter.setText("");
+
     }
 
     @Override
@@ -64,19 +66,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float z = sensorEvent.values[2];
 
             long curTime = System.currentTimeMillis();
-
             if ((curTime - lastUpdate) > 100) {
                 long diffTime = (curTime - lastUpdate);
                 lastUpdate = curTime;
 
-                float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
-
+                float speed = Math.abs(x + y  +z - last_x - last_y - last_z) / diffTime * 10000;
+                Log.d("Speed",String.valueOf(speed));
+                final long now = System.currentTimeMillis();
+                if(shakeTimeStamp + SHAKE_SLOP_TIME_MS > now){
+                    Log.d("Shakestamp>now", "true");
+                    return;
+                }
+                Log.d("Shakestamp>now", "false");
                 if (speed > SHAKE_THRESHOLD) {
                     onShake();
                 }
                 last_x = x;
                 last_y = y;
                 last_z = z;
+                shakeTimeStamp = now;
             }
         }
     }
@@ -88,10 +96,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void onShake() {
         shakesCounter++;
-        Log.d("ShakesCounter", "Inkrementowany");
+        Log.d("ShakesCounter", "Incremented");
         System.out.println(shakesCounter);
-        Log.d("ShakesCounter", "Wypisany");
         calCounter.setText(String.valueOf(shakesCounter));
-        Log.d("Toast", "Wywołany");
+
     }
 }
