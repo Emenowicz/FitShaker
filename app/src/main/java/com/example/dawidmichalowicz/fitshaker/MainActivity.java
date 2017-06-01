@@ -1,6 +1,9 @@
 package com.example.dawidmichalowicz.fitshaker;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,6 +19,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,9 +52,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int shakesCounter = 0;
     long startTime = 0;
     long time = 0;
+    int seconds = 0;
+    int minutes = 0;
+    long millis = 0;
     int weight = 70;
     boolean stopped = false;
     float cals;
+    private SharedPreferences preferences;
 
     //Timer setup
     Handler timerHandler = new Handler();
@@ -54,11 +66,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public void run() {
-            long millis = System.currentTimeMillis() - startTime;
+            millis = System.currentTimeMillis() - startTime;
             time = millis;
-            int seconds = (int) (millis / 1000);
+            seconds = (int) (millis / 1000);
             millis = (int) ((millis % 1000) / 10);
-            int minutes = seconds / 60;
+            minutes = seconds / 60;
             seconds = seconds % 60;
 
             timerTV.setText(String.format("%02d:%02d:%02d", minutes, seconds, millis));
@@ -75,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        preferences = getSharedPreferences("trainings", Activity.MODE_PRIVATE);
         calCounter = new CaloriesCounter();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -93,15 +107,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch(item.getItemId()) {
             case R.id.saveAction:
                 Toast.makeText(this, "Save selected", Toast.LENGTH_SHORT).show();
+                saveData();
                 break;
             case R.id.showSettingsAction:
                 Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this,TrainingList.class);
+                startActivity(intent);
                 break;
             default:
                 break;
         }
         return true;
 
+    }
+
+    private void saveData() {
+        SharedPreferences.Editor preferencesEditor = preferences.edit();
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        DateFormat key = new SimpleDateFormat("dd/MM/yyyy/hh/mm/ss");
+        Date date = new Date();
+
+        String duration = String.format("%02d:%02d:%02d", minutes, seconds, millis);
+        String result = df.format(date) + "    Czas: "+ duration + "    Spalone kalorie: " + String.format(getString(R.string.cal_format),cals);
+        Log.d("log",result);
+        Log.d("log",key.format(date));
+
+        preferencesEditor.putString(key.format(date),result);
     }
 
     @Override
