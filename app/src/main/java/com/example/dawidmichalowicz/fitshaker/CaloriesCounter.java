@@ -6,7 +6,7 @@ package com.example.dawidmichalowicz.fitshaker;
 
 public class CaloriesCounter {
     public float countCals(long time, int weight){
-        float calories = Math.round((weight*16)*time/(1000*60*60));
+        float calories = (weight*8)*(float)time/(1000*60*60);
         return calories;
     }
 

@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">FitShaker</string>
     <string name="header">Twoja sesja</string>
-    <string name="default_timer">0.0</string>
-    <string name="default_cal">0</string>
+    <string name="default_timer">00:00:00</string>
+    <string name="default_cal">0.0</string>
     <string name="start_session">Start</string>
     <string name="stop_session">Stop</string>
+    <string name="kcal">kCal</string>
+    <string name="time_format">%02d:%02d:%02d</string>
+    <string name="cal_format">%03.1f</string>
 </resources>
