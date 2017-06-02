@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int minutes = 0;
     long millis = 0;
     int weight = 70;
+    boolean saved = true;
     boolean stopped = false;
     float cals;
     private SharedPreferences preferences;
@@ -116,8 +117,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.saveAction:
-                saveData();
-                Toast.makeText(this, "Trening zapisany", Toast.LENGTH_SHORT).show();
+                if (!saved) {
+                    saveData();
+                    Toast.makeText(this, "Trening zapisany", Toast.LENGTH_SHORT).show();
+                    saved = true;
+                }
                 break;
             case R.id.showSettingsAction:
                 Intent intent = new Intent(this, List.class);
@@ -125,19 +129,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
             case R.id.resetTrainingList:
                 LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-                View popup = inflater.inflate(R.layout.popup,null);
+                View popup = inflater.inflate(R.layout.popup, null);
                 final PopupWindow popupWindow = new PopupWindow(
                         popup,
                         RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT
                 );
-                if(Build.VERSION.SDK_INT>=21){
+                if (Build.VERSION.SDK_INT >= 21) {
                     popupWindow.setElevation(5.0f);
                 }
                 Button confirm = (Button) popup.findViewById(R.id.confirmButton);
                 Button decline = (Button) popup.findViewById(R.id.declineButton);
 
-                confirm.setOnClickListener(new View.OnClickListener(){
+                confirm.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
@@ -149,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 });
 
-                decline.setOnClickListener(new View.OnClickListener(){
+                decline.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         Toast.makeText(mainContext, "Historia treningów bez zmian", Toast.LENGTH_SHORT).show();
                     }
                 });
-                popupWindow.showAtLocation(constraintLayout, Gravity.CENTER,0,0);
+                popupWindow.showAtLocation(constraintLayout, Gravity.CENTER, 0, 0);
 
                 break;
             default:
@@ -223,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     sensorManager.unregisterListener(this);
                     startButton.setClickable(true);
                     Toast.makeText(this, "Za długo bez ruchu. \nSesja przerwana", Toast.LENGTH_LONG).show();
+                    saved = false;
                 }
 
                 if (speed > SHAKE_THRESHOLD) {
@@ -232,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     last_z = z;
                     shakeTimeStamp = now;
                 }
-
             }
         }
     }
@@ -250,7 +254,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         startTime = System.currentTimeMillis();
         timerHandler.postDelayed(timerRunnable, 0);
         startButton.setClickable(false);
-
     }
 
     @OnClick(R.id.stop_button)
@@ -260,10 +263,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             timerHandler.removeCallbacks(timerRunnable);
             startButton.setClickable(true);
             stopped = true;
+            saved = false;
         } else {
             timerTV.setText(getString(R.string.default_timer));
             calTV.setText(getString(R.string.default_cal));
             stopped = false;
+            saved = true;
         }
     }
 
